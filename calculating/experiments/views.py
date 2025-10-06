@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
-from .forms import ExperimentImportForm
+from .forms import ExperimentImportForm, ExperimentSelectForm
+from django.utils import timezone
 from .models import Experiment
 
 
@@ -71,7 +72,45 @@ def dashboard(request):
             "Эксперимент создан" if created else "Эксперимент обновлён"
         )
         return redirect("exp_dashboard")
+    
+    finished = request.GET.get('finished') == '1'   # ← вот твой finished (bool)
 
-    # GET-запрос — просто показать форму
-    form = ExperimentImportForm()
-    return render(request, "experiments/dashboard.html", {"form": form})
+    qs = Experiment.objects.all()
+    if not finished:
+        qs = qs.filter(calculation_finished=False)
+
+    # Форма выбора с текущими значениями из GET
+    select_form = ExperimentSelectForm(
+        data={'finished': finished, 'experiment': request.GET.get('experiment')}
+    )
+    select_form.fields['experiment'].queryset = qs.order_by('name')
+
+    # Если выбран experiment — подгружаем его и готовим данные для отображения
+    exp = None
+    segments_pretty = ''
+    funnels_pretty = ''
+    date_value = ''
+
+    if request.GET.get('experiment'):
+        try:
+            exp = qs.get(pk=request.GET['experiment'])
+            segments_pretty = json.dumps(exp.config_segments, ensure_ascii=False, indent=2)
+            funnels_pretty  = json.dumps(exp.config_funnels,  ensure_ascii=False, indent=2)
+            dt = exp.last_update_date.astimezone(timezone.get_current_timezone())
+            date_value = dt.strftime('%Y-%m-%dT%H:%M')  # для <input type="datetime-local">
+        except Experiment.DoesNotExist:
+            exp = None
+
+    context = {
+        'form': ExperimentImportForm(),  # старая форма импорта
+        'select_form': select_form,
+        'finished': finished,
+        'exp': exp,
+        'segments_pretty': segments_pretty,
+        'funnels_pretty': funnels_pretty,
+        'date_value': date_value,
+    }
+    return render(request, "experiments/dashboard.html", context)
+    # # GET-запрос — просто показать форму
+    # form = ExperimentImportForm()
+    # return render(request, "experiments/dashboard.html", {"form": form})

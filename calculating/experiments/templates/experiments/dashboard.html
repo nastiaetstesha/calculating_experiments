@@ -12,4 +12,51 @@
   <p>или вставить JSON-текст:</p>
   <p><textarea name="json_text" rows="10" cols="80"></textarea></p>
   <button name="import" value="1">Импортировать</button>
+  <hr>
+
+<form method="get">
+  <label>
+    <input type="checkbox" name="finished" value="1" {% if finished %}checked{% endif %}>
+    Расчёты завершены
+  </label>
+
+  {{ select_form.experiment }}
+
+  <button type="submit">Показать</button>
+</form>
+
+{% if exp %}
+  <h3>{{ exp.name }} (id={{ exp.pk }})</h3>
+
+  <!-- 3. конфиги сегментов (только просмотр на этом шаге) -->
+  <label>конфиги сегментов</label><br>
+  <textarea rows="10" cols="80" name="config_segments" readonly>{{ segments_pretty }}</textarea>
+
+  <!-- 4. конфиги воронок -->
+  <label>конфиги воронок</label><br>
+  <textarea rows="10" cols="80" name="config_funnels" readonly>{{ funnels_pretty }}</textarea>
+
+  <!-- 6. дата -->
+  <p>
+    <label>Дата</label>
+    <input type="datetime-local" name="date" value="{{ date_value }}" disabled>
+  </p>
+
+  <!-- 7. период -->
+  <p>
+    <label>Период</label>
+    <select name="period" disabled>
+      <option value="selected_date" selected>Выбранная дата</option>
+      <option value="from_selected_to_yesterday">С выбранной даты по вчера</option>
+      <option value="all_time">За весь период</option>
+    </select>
+  </p>
+
+  <!-- кнопки пока не активны на этом шаге -->
+  <p>
+    <button disabled>Сохранить</button>
+    <button disabled>Запустить расчёты</button>
+  </p>
+{% endif %}
+
 </form>

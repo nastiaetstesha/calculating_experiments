@@ -30,6 +30,6 @@ class Experiment(models.Model):
         ordering = ['-last_update_date']
 
     def __str__(self):
-        if self.user:
-            return self.user.get_username()
+        # if self.user:
+        #     return self.user.get_username()
         return f'{self.name} (#{self.pk})'
