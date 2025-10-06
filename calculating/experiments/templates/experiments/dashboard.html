@@ -1,0 +1,15 @@
+<h2>Управление экспериментами</h2>
+
+{% if messages %}
+  <ul>
+    {% for m in messages %}<li>{{ m }}</li>{% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <p>Загрузить файл JSON: <input type="file" name="json_file" accept=".json,application/json"></p>
+  <p>или вставить JSON-текст:</p>
+  <p><textarea name="json_text" rows="10" cols="80"></textarea></p>
+  <button name="import" value="1">Импортировать</button>
+</form>
